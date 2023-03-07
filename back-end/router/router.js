@@ -7,6 +7,7 @@ const router = express.Router()
 
 
 router.post('/signup', authController.handleSignUp)
+router.post('/signin', authController.handleSignIn)
 
 // in case api route is not registered!
 router.use('/*', errorController.error404)
