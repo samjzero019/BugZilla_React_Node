@@ -23,19 +23,27 @@ exports.handleSignUp = (req, res, next) => {
 };
 
 exports.handleSignIn = (req, res, next) => {
-  console.log("Req has reached to SignIn Handler with body: ", req.body);
   const { email, password } = req.body;
 
   User.findOne({ email: email })
     .then((user) => {
       const valid_pass = bcrypt.compareSync(password, user.password);
-      return valid_pass;
+      if (!valid_pass) {
+        return res.status(400).json({ message: "Password is Invalid!" });
+      }
+      req.session.isLoggedIn = true;
+      req.session.current_user = {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+        bugs: user.bugs,
+      };
+      res.status(200).json({
+        message: "Login Successful",
+        data: { _id: user._id, email: user.email, role: user.role },
+      });
     })
-    .then((isLoggedIn) => {
-      isLoggedIn
-        ? res.status(200).json({ message: "Login Successfull" })
-        : res.status(400).json({ message: "Password is Invalid!" });
-    })
+
     .catch((err) => {
       console.log("Error during Login", err.message);
       res.status(500).json({
@@ -46,5 +54,29 @@ exports.handleSignIn = (req, res, next) => {
 };
 
 exports.handleSignOut = (req, res, next) => {
-  res.json("Signout Api");
+  req.session.destroy(() => {
+    return res.status(200).json({ message: "SignOut Successful" });
+  });
+};
+
+exports.getUsers = (req, res, next) => {
+  if (req.session.current_user.role !== "manager") {
+    return res.status(401).json({
+      message: "Role Permission Restriction",
+      error: "Only Manager Role Can get user details!",
+    });
+  }
+  User.find()
+    .then((allUsers) => {
+      return res.status(200).json({
+        message: "Successful",
+        data: allUsers,
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "failed to get Users",
+        error: err.message,
+      });
+    });
 };

@@ -1,13 +1,28 @@
 const express = require("express");
 const parser = require("body-parser");
+const session = require("express-session");
+const mongoDBStore = require("connect-mongodb-session")(session);
 
 const router = require("./router/router");
 const { default: mongoose } = require("mongoose");
-
 const server = express();
+
+const DB_URI =
+  "mongodb+srv://admin:iJb8S64fMy59R8rO@bugzilla.0xf2sws.mongodb.net/bugzilla";
 
 // router.use(parser.urlencoded({ extended: false })) // parse the request for data of x-www-urlencoded type which comes from form etc
 server.use(parser.json()); // for  request data which has json base data
+const store = mongoDBStore({ uri: DB_URI, collection: "sessions" });
+
+// initialize Session with db persistance
+server.use(
+  session({
+    secret: "BugZilla",
+    resave: false,
+    saveUninitialized: false,
+    store: store,
+  })
+);
 
 /** Set Headers  */
 server.use((req, res, next) => {
@@ -20,9 +35,7 @@ server.use((req, res, next) => {
 server.use("/api/v1", router);
 
 mongoose
-  .connect(
-    "mongodb+srv://admin:iJb8S64fMy59R8rO@bugzilla.0xf2sws.mongodb.net/bugzilla?retryWrites=true&w=majority"
-  )
+  .connect(DB_URI)
   .then((res) => {
     console.log("Connection Established!!!");
     // return res;
