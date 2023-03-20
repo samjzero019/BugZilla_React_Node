@@ -33,14 +33,14 @@ exports.createBug = (req, res, next) => {
 
 exports.updateBugByID = (req, res, next) => {
   const { id } = req.params;
-
+  const newBug = req.body;
   if (req.session.current_user.role === "developer") {
     return res.status(401).json({
       message: "Role Permission Restriction",
       error: "Developer Role can't create/update Bug resources",
     });
   }
-  const newBug = req.body;
+
   Bug.findByIdAndUpdate(id, newBug)
     .then(() => {
       res.status(200).json({
@@ -67,10 +67,11 @@ exports.getBugs = (req, res, next) => {
       }
       const user_bugs = allBugs.filter(
         (itm) =>
-          itm._creator.toString() === req.session.current_user._id.toString()
+          itm._creator.toString() === req.session.current_user._id.toString() ||
+          itm.assigned_to.toString() === req.session.current_user._id.toString()
       );
       return res.status(200).json({
-        message: "Successful",
+        message: "Successfully fetched User created or assigned bugs",
         data: user_bugs,
       });
     })
@@ -83,7 +84,13 @@ exports.getBugs = (req, res, next) => {
     });
 };
 exports.getBugByID = (req, res, next) => {
-  //todo need to handle this thing as per permissions@
+  if (req.session.current_user.role === "developer") {
+    return res.status(401).json({
+      message: "Role Permission Restriction",
+      error: "Developer Role Permission Restriction",
+    });
+  }
+
   const { id } = req.params;
   Bug.findById(id)
     .then((result) => {

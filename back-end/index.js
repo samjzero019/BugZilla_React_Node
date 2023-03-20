@@ -3,7 +3,11 @@ const parser = require("body-parser");
 const session = require("express-session");
 const mongoDBStore = require("connect-mongodb-session")(session);
 
-const router = require("./router/router");
+const authRoutes = require("./src/router/auth");
+const userRoutes = require("./src/router/user");
+const bugRoutes = require("./src/router/bug");
+const errorController = require("./src/controllers/error");
+
 const { default: mongoose } = require("mongoose");
 const server = express();
 
@@ -32,7 +36,13 @@ server.use((req, res, next) => {
   next();
 });
 
-server.use("/api/v1", router);
+server.use("/api/v1", authRoutes);
+server.use("/api/v1", userRoutes);
+server.use("/api/v1", bugRoutes);
+
+// Common Routes
+// in case api route is not registered!
+server.use("/*", errorController.error404);
 
 mongoose
   .connect(DB_URI)

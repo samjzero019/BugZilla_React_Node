@@ -2,13 +2,13 @@
   "name": "back-end",
   "version": "1.0.0",
   "description": "Bugzilla backend developed using NodeJS and its third party libraries",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "UX-J",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
