@@ -9,7 +9,8 @@ const isLoggedIn = require("../middlewares/is-auth");
 const router = express.Router();
 
 //User Routes
-router.get("/users", authController.getUsers);
+router.get("/users", isLoggedIn, authController.getUsers);
+router.put("/user/role/:id", isLoggedIn, authController.changeUserRole);
 
 router.post("/signup", authController.handleSignUp);
 router.post("/signin", authController.handleSignIn);

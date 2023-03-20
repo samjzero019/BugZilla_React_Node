@@ -106,7 +106,7 @@ exports.deleteBugByID = (req, res, next) => {
   if (req.session.current_user.role !== "manager") {
     return res.status(401).json({
       message: "Role Permission Restriction",
-      error: "Contact Manager to  destory Bug resources",
+      error: "Contact Manager to  destroy Bug resources",
     });
   }
   Bug.deleteOne({ _id: id })
@@ -176,23 +176,46 @@ exports.assignBug = (req, res, next) => {
 };
 
 exports.updateBugStatus = (req, res, next) => {
-  if (req.session.current_user.role === "developer") {
-    return res.status(401).json({
-      message: "Role Permission Restriction",
-      error: "Developer Role can't directly change Bug Status",
-    });
-  }
-
   let { id } = req.params;
   let { status } = req.body;
 
+  let query;
+  switch (req.session.current_user.role) {
+    case "manager":
+      query = { _id: id };
+      break;
+    case "qa":
+      query = {
+        $and: [
+          { _id: id },
+          {
+            $or: [
+              { _creator: req.session.current_user._id },
+              { assigned_to: req.session.current_user._id },
+            ],
+          },
+        ],
+      };
+      break;
+    case "developer":
+      query = {
+        $and: [{ _id: id }, { assigned_to: req.session.current_user._id }],
+      };
+      break;
+  }
+
   Bug.findOneAndUpdate(
-    // {$or:{}},
-    { _id: id },
+    query,
     { status: status },
     { runValidators: true, new: true }
   )
     .then((response) => {
+      if (!response) {
+        return res.status(401).json({
+          message: `Something went Wrong!`,
+          error: " Role Permission Restriction",
+        });
+      }
       res.status(200).json({
         message: `Bug Status changed to: ${status} Successfully`,
         response: response,

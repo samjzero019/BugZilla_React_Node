@@ -80,3 +80,32 @@ exports.getUsers = (req, res, next) => {
       });
     });
 };
+
+exports.changeUserRole = (req, res, next) => {
+  if (req.session.current_user.role !== "manager") {
+    return res.status(401).json({
+      message: "Role Permission Restriction",
+      error: "Only Manager Role Can assign bugs to resources!",
+    });
+  }
+
+  const { id } = req.params;
+  const { role } = req.body;
+  User.findOneAndUpdate(
+    { _id: id },
+    { role: role },
+    { new: true, runValidators: true }
+  )
+    .then((response) => {
+      res.status(200).json({
+        message: "Login Successful",
+        response: {_id:response._id, email: response.email, role: response.role},
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        message: "Failed to change User Role",
+        error: err.message,
+      });
+    });
+};
