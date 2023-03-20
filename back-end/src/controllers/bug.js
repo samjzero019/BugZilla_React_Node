@@ -3,12 +3,6 @@ const User = require("../models/User");
 
 exports.createBug = (req, res, next) => {
   let { title, description, priority, deadline, status } = req.body;
-  if (req.session.current_user.role === "developer") {
-    return res.status(401).json({
-      message: "Role Permission Restriction",
-      error: "Developer Role can't create Bug resources",
-    });
-  }
 
   Bug.create({
     title: title,
@@ -34,12 +28,6 @@ exports.createBug = (req, res, next) => {
 exports.updateBugByID = (req, res, next) => {
   const { id } = req.params;
   const newBug = req.body;
-  if (req.session.current_user.role === "developer") {
-    return res.status(401).json({
-      message: "Role Permission Restriction",
-      error: "Developer Role can't create/update Bug resources",
-    });
-  }
 
   Bug.findByIdAndUpdate(id, newBug)
     .then(() => {
@@ -84,12 +72,7 @@ exports.getBugs = (req, res, next) => {
     });
 };
 exports.getBugByID = (req, res, next) => {
-  if (req.session.current_user.role === "developer") {
-    return res.status(401).json({
-      message: "Role Permission Restriction",
-      error: "Developer Role Permission Restriction",
-    });
-  }
+  
 
   const { id } = req.params;
   Bug.findById(id)
@@ -110,12 +93,7 @@ exports.getBugByID = (req, res, next) => {
 
 exports.deleteBugByID = (req, res, next) => {
   const { id } = req.params;
-  if (req.session.current_user.role !== "manager") {
-    return res.status(401).json({
-      message: "Role Permission Restriction",
-      error: "Contact Manager to  destroy Bug resources",
-    });
-  }
+
   Bug.deleteOne({ _id: id })
     .then((result) => {
       if (result.deletedCount <= 0) {
@@ -138,12 +116,7 @@ exports.deleteBugByID = (req, res, next) => {
 };
 
 exports.assignBug = (req, res, next) => {
-  if (req.session.current_user.role !== "manager") {
-    return res.status(401).json({
-      message: "Role Permission Restriction",
-      error: "Only Manager Role Can assign bugs to resources!",
-    });
-  }
+
 
   const bugID = req.params.id;
   const { userID } = req.body;

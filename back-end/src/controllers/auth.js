@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User");
 
 exports.handleSignUp = (req, res, next) => {
-  console.log("Req has reached to signUp Handler with body: ", req.body);
   const { email, password, role } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 12);
   User.create({ email: email, password: hashedPassword, role: role })

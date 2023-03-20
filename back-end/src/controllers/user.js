@@ -1,12 +1,7 @@
 const User = require("../models/User");
 
 exports.getUsers = (req, res, next) => {
-  if (req.session.current_user.role !== "manager") {
-    return res.status(401).json({
-      message: "Role Permission Restriction",
-      error: "Only Manager Role Can get user details!",
-    });
-  }
+ 
   User.find()
     .then((allUsers) => {
       return res.status(200).json({
@@ -25,13 +20,6 @@ exports.getUsers = (req, res, next) => {
 exports.changeUserRole = (req, res, next) => {
   const { id } = req.params;
   const { role } = req.body;
-
-  if (req.session.current_user.role !== "manager" || role === "manager") {
-    return res.status(401).json({
-      message: "Role Permission Restriction",
-      error: "Only Manager Role can assign  roles of lower hierarchy  !",
-    });
-  }
 
   User.findOneAndUpdate(
     { _id: id },
